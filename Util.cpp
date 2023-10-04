@@ -2,6 +2,7 @@
 #include <fstream>
 #include <string>
 #include <vector>
+#include <cstdint>
 #include "StratWad.hpp"
 #include "Util.hpp"
 
@@ -26,8 +27,8 @@ void dumpSegments(const StratWad &sw, bool secondary) {
     }
 
     for (int i = 0; i < static_cast<int>(sw.getSegmentCount(secondary)); i++) {
-        size_t segmentSize = sw.getSegmentSize(i, secondary);
-        const std::vector<unsigned char> &segment = sw.getSegment(i, secondary);
+        std::uint32_t segmentSize = sw.getSegmentSize(i, secondary);
+        const std::vector<std::uint8_t> &segment = sw.getSegment(i, secondary);
 
         if (!segment.empty()) {
             std::string name = pre + '0' + std::to_string(i) + ".bin";

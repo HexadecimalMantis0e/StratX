@@ -2,10 +2,11 @@
 #include <fstream>
 #include <string>
 #include <vector>
+#include <cstdint>
 #include "StratWad.hpp"
 
 bool StratWad::readStratWad(std::ifstream &fs) {
-    size_t header = 0;
+    std::uint32_t header = 0;
 
     fs.read(reinterpret_cast<char *>(&header), 0x04);
 
@@ -23,14 +24,14 @@ bool StratWad::readStratWad(std::ifstream &fs) {
     fs.seekg(0x78, std::ios::beg);
 
     for (int i = 0; i < 2; i++) {
-        size_t segmentSize = 0;
+        std::uint32_t segmentSize = 0;
 
         fs.read(reinterpret_cast<char *>(&segmentSize), 0x04);
         secondarySizes.push_back(segmentSize);
     }
 
     for (int i = 0; i < 3; i++) {
-        size_t segmentSize = 0;
+        std::uint32_t segmentSize = 0;
 
         fs.read(reinterpret_cast<char *>(&segmentSize), 0x04);
         primarySizes.push_back(segmentSize);
@@ -41,7 +42,7 @@ bool StratWad::readStratWad(std::ifstream &fs) {
     fs.seekg(ptrToData + 0x0C, std::ios::beg);
 
     for (int i = 0; i < 3; i++) {
-        std::vector<unsigned char> segment(primarySizes.at(i), 0x00);
+        std::vector<std::uint8_t> segment(primarySizes.at(i), 0x00);
 
         if (!segment.empty()) {
             fs.read(reinterpret_cast<char *>(segment.data()), primarySizes.at(i));
@@ -51,12 +52,12 @@ bool StratWad::readStratWad(std::ifstream &fs) {
     }
 
     for (int i = 0; i < 2; i++) {
-        std::vector<unsigned char> segment(secondarySizes.at(i), 0x00);
+        std::vector<std::uint8_t> segment(secondarySizes.at(i), 0x00);
 
         if (!segment.empty()) {
-            size_t offset = fs.tellg();
-            size_t secondaryAlign = 0x800;
-            size_t paddingSize = ((offset + secondaryAlign - 0x01) / secondaryAlign * secondaryAlign) - offset;
+            std::uint32_t offset = fs.tellg();
+            std::uint32_t secondaryAlign = 0x800;
+            std::uint32_t paddingSize = ((offset + secondaryAlign - 0x01) / secondaryAlign * secondaryAlign) - offset;
 
             fs.seekg(paddingSize, std::ios::cur);
             fs.read(reinterpret_cast<char *>(segment.data()), secondarySizes.at(i));
@@ -67,7 +68,7 @@ bool StratWad::readStratWad(std::ifstream &fs) {
     return true;
 }
 
-size_t StratWad::getWadVersion() const {
+std::uint32_t StratWad::getWadVersion() const {
     return wadVersion;
 }
 
@@ -79,11 +80,11 @@ const std::string &StratWad::getSignature() const {
     return signature;
 }
 
-size_t StratWad::getSegmentSize(int segment, bool secondary) const {
+std::uint32_t StratWad::getSegmentSize(int segment, bool secondary) const {
     return secondary ? secondarySizes.at(segment) : primarySizes.at(segment);
 }
 
-size_t StratWad::getSegmentCount(bool secondary) const {
+std::uint32_t StratWad::getSegmentCount(bool secondary) const {
     return secondary ? this->secondary.size() : primary.size();
 }
 
@@ -91,6 +92,6 @@ const std::string &StratWad::getArguments() const {
     return arguments;
 }
 
-const std::vector<unsigned char> &StratWad::getSegment(int segment, bool secondary) const {
+const std::vector<std::uint8_t> &StratWad::getSegment(int segment, bool secondary) const {
     return secondary ? this->secondary.at(segment) : primary.at(segment);
 }
